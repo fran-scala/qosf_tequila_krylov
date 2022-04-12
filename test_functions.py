@@ -37,6 +37,37 @@ def make_overlap(U0 = None, U1 = None):
     
     return Ex, Ey
 
+def p2g(ps):
+        '''
+        Functions that converts a Pauli string into the corresponding quantum 
+        circuit.
+        
+        Parameters
+        ----------
+        ps : Pauli string.
+
+        Raises
+        ------
+        Exception: Not a Pauli Operator.
+
+        Returns
+        -------
+        U : QCircuit tequila object corresponding to the Pauli string.
+
+        '''
+        
+        U = tq.QCircuit()
+        for k,v in ps.items():
+            if v.lower() == "x":
+                U+=tq.gates.X(target=k)
+            elif v.lower() == "y":
+                U+=tq.gates.Y(target=k)
+            elif v.lower() == "z":
+                U+=tq.gates.Z(target=k)
+            else:
+                raise Exception("{}???".format(v))
+        return U
+
 
 def make_transition(U0=None, U1=None, H=None):# may be V instead of H
     '''
@@ -61,25 +92,20 @@ def make_transition(U0=None, U1=None, H=None):# may be V instead of H
 
     '''
     
-    U0.add_controls([0]) #this add the control by modifying the previous circuit
-    U1.add_controls([0]) #NonType object
-    H.add_controls([0])
+    H = tq.QubitHamiltonian("1.0*X(0)+0.5*Y(0)Z(1)")
     
-    #bulding the circuit for the overlap evaluation
-    circuit = tq.gates.H(target=0)
-    circuit += U0
-    circuit += tq.gates.X(target=0)
-    circuit += U1
-    circuit += H
+    # should in the end go into tq.gates
+    # shuch that we can just do: U = tq.gates.Pauli(paulistring=ps)
+    # want to measure: <U1|H|U0> -> \sum_k c_k <U1|U|U0>
+    transition_element=0.0
+    for ps in H.paulistrings:
+        print(ps)
+        c = ps.coeff
+        U = p2g(ps)
+        tmp = make_overlap(U0=U0, U1=U1+U)
+        transition_element += c*tmp
     
-    
-    x = tq.paulis.X(0)
-    y = tq.paulis.Y(0)
-    Ex = tq.ExpectationValue(H=x, U=circuit)
-    Ey = tq.ExpectationValue(H=y, U=circuit)
-    
-    exp_val = Ex + 1.0j*Ey
-    return exp_val 
+    return transition_element
 
 
 def test_simple_overlap():
