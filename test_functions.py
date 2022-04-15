@@ -1,4 +1,5 @@
 import tequila as tq
+from tequila import numpy as np
 import copy
 
 def make_overlap(U0 = None, U1 = None):
@@ -37,7 +38,62 @@ def make_overlap(U0 = None, U1 = None):
     
     return Ex, Ey
 
-def p2g(ps):
+def test_simple_overlap():
+    '''
+    Function that tests if make_overlap function is working correctly.
+    It creates a simple circuit in order to check that both real and imaginary 
+    part are calculated in the right way. 
+
+    Returns
+    -------
+    None.
+
+    '''
+    # two circuits to test
+    U0 = tq.gates.Rz(angle=1.0, target=1)#tq.gates.H(target=1) + tq.gates.CNOT (1 ,2)
+    U1 = tq.gates.Rz(angle=2, target=1)#tq.gates.X(target=[1,2])#
+    
+    objective_real, objective_im = make_overlap(U0,U1)
+    
+    Ex = tq.simulate(objective_real)
+    Ey= tq.simulate(objective_im)
+    
+    exp_val = Ex + 1.0j*Ey
+    
+    #print('Evaluated overlap between the two states: {}\n'.format(exp_val))
+    
+    # we want the overlap of the wavefunctions
+    # # to test we can compute it manually
+    wfn0 = tq.simulate(U0)
+    
+    wfn1 = tq.simulate(U1)
+   
+    test = wfn0.inner(wfn1)#it seems to be wrong
+    #print('Correct overlap between the two states: {}'.format(test))
+    
+    #print('The two result are approximately the same?',np.isclose(test, exp_val, atol=1.e-4))
+    
+    assert np.isclose(test, exp_val, atol=1.e-4)
+    
+    return
+
+def test_random_overlap():
+    '''
+    Function that tests if make_overlap function is working correctly.
+    It creates circuits with random number of qubits, random rotations and 
+    random angles.
+
+    Returns
+    -------
+    None.
+
+    '''
+    
+    
+    return
+
+
+def p2g(ps, first_qubit = 0):
         '''
         Functions that converts a Pauli string into the corresponding quantum 
         circuit.
@@ -59,11 +115,11 @@ def p2g(ps):
         U = tq.QCircuit()
         for k,v in ps.items():
             if v.lower() == "x":
-                U+=tq.gates.X(target=k)
+                U+=tq.gates.X(target=k+first_qubit)
             elif v.lower() == "y":
-                U+=tq.gates.Y(target=k)
+                U+=tq.gates.Y(target=k+first_qubit)
             elif v.lower() == "z":
-                U+=tq.gates.Z(target=k)
+                U+=tq.gates.Z(target=k+first_qubit)
             else:
                 raise Exception("{}???".format(v))
         return U
@@ -80,37 +136,40 @@ def make_transition(U0=None, U1=None, H=None):# may be V instead of H
          
     U1 : QCircuit tequila object, corresponding to the second state.
     
-    H : TYPE, optional
-        DESCRIPTION. 
-        ?????
-        tq.gates.Trotterized(generator=tq.paulis.Y(0), angle=1)
-        this for gives me the trotterization or is one ofthe m operators I have to compose?
-
+    H : QubitHamiltonian tequila object
+        
     Returns
     -------
-    Tequila objective to be simulated or compiled.
+    The value of the transition element as a complex number.
 
     '''
     
-    H = tq.QubitHamiltonian("1.0*X(0)+0.5*Y(0)Z(1)")
+    # want to measure: <U1|H|U0> -> \sum_k c_k <U1|U_k|U0>
     
-    # should in the end go into tq.gates
-    # shuch that we can just do: U = tq.gates.Pauli(paulistring=ps)
-    # want to measure: <U1|H|U0> -> \sum_k c_k <U1|U|U0>
-    transition_element=0.0
+    transition_element = 0.0 + 0.0j
+    
     for ps in H.paulistrings:
-        print(ps)
-        c = ps.coeff
-        U = p2g(ps)
-        tmp = make_overlap(U0=U0, U1=U1+U)
-        transition_element += c*tmp
+        #print('string',ps)
+        c_k = ps.coeff
+        #print('coeff', c_k)
+        U_k = p2g(ps,first_qubit=1)
+        objective_real, objective_im = make_overlap(U0=U0, U1=U1+U_k)
+        
+        tmp_r = tq.simulate(objective_real)
+        tmp_im = tq.simulate(objective_im)
+        
+        tmp = tmp_r + 1.0j*tmp_im
+        #print('contribution',c_k*tmp)
+        #print()
+        transition_element += c_k*tmp
+        
     
     return transition_element
 
 
-def test_simple_overlap():
+def test_simple_transition():
     '''
-    Function that tests if make_overlap function is working correctly.
+    Function that tests if make_transition function is working correctly.
     It creates a simple circuit in order to check that both real and imaginary 
     part are calculated in the right way. 
 
@@ -119,71 +178,52 @@ def test_simple_overlap():
     None.
 
     '''
-        # two circuits to test
-    U0 = tq.gates.Rz(angle=1.0, target=1)#tq.gates.H(target=1) + tq.gates.CNOT (1 ,2)
-    U1 = tq.gates.Rz(angle=2, target=1)#tq.gates.X(target=[1,2])#
+    # two circuits to test
+    U0 = tq.gates.H(target=1) + tq.gates.CNOT (1 ,2)#tq.gates.Rx(angle=1.0, target=1)#
+    U1 = tq.gates.X(target=[1,2])+tq.gates.Ry(angle=2, target=1)#
     
-    print(U0)
-    print(U1)
-    print()
-    # we want the overlap of the wavefunctions
+    # defining the hamiltonian
+    H = tq.QubitHamiltonian("1.0*Y(0)X(1)+0.5*Y(1)Z(0)")
+    #print('Hamiltonian',H,'\n')
     
-    # goal would be a function like this
-    objective_real, objective_im = make_overlap(U0,U1)
+    # calculating the transition element
+    trans_el = make_transition(U0=U0, U1=U1, H=H)
     
-    Ex = tq.simulate(objective_real)
-    Ey= tq.simulate(objective_im)
     
-    exp_val = Ex + 1.0j*Ey
-    
-    print('Evaluated overlap between the two states: {}'.format(exp_val))
+    #print('Evaluated transition element between the two states: {}'.format( trans_el))
     
     # # to test we can compute it manually
+    #print()
+    correct_trans_el = 0.0 + 0.0j
+    
     wfn0 = tq.simulate(U0)
-    print(wfn0)
-    wfn1 = tq.simulate(U1)
-    print(wfn1)    
-    test = wfn0.inner(wfn1)#it seems to be wrong
-    print(test)
     
-    # # assert numpy.isclose(test, evaluated)
+    for ps in H.paulistrings:
+        
+        c_k = ps.coeff
+       
+        U_k = p2g(ps,first_qubit=1)
+        wfn1 = tq.simulate(U1+U_k)
+        
+        tmp = wfn0.inner(wfn1)
+        #print('contribution',c_k*tmp)
+        correct_trans_el += c_k*tmp
     
-    return
-
-def test_random_overlap():
-    '''
-    Function that tests if make_overlap function is working correctly.
-    It creates circuits with random number of qubits, random rotations and 
-    random angles.
-
-    Returns
-    -------
-    None.
-
-    '''
     
+    #print('Correct transition element value: {}'.format(correct_trans_el))
+    
+    #print('The two result are approximately the same?',np.isclose(correct_trans_el, trans_el, atol=1.e-4))
+    
+    assert np.isclose(correct_trans_el, trans_el, atol=1.e-4)
     
     return
-
 
 #-----------------------------------------------
 # MAIN function
 #-----------------------------------------------
 if __name__ == "__main__":
-
-    
+  
     test_simple_overlap()
+    
+    test_simple_transition()
 
-    # # same thing with operators
-    # # to test <psi0|H|psi1>
-    # # with function that we want:
-    # # sandwhich = make_transition(U0,U1,H)
-    
-    # # test with:
-    # H = tq.paulis.X(0)
-    # tmp = H(wfn1)
-    # test_sandwhich = wfn0.inner(tmp)
-    
-    # # potentially useful
-    
-    # cu0 = U0.add_controls([1]) 
