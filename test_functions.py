@@ -1,5 +1,6 @@
 import tequila as tq
-from tequila import numpy as np
+#from tequila 
+import numpy as np
 import copy
 
 def make_overlap(U0 = None, U1 = None):
@@ -68,7 +69,7 @@ def test_simple_overlap():
     
     wfn1 = tq.simulate(U1)
    
-    test = wfn0.inner(wfn1)#it seems to be wrong
+    test = wfn0.inner(wfn1)
     #print('Correct overlap between the two states: {}'.format(test))
     
     #print('The two result are approximately the same?',np.isclose(test, exp_val, atol=1.e-4))
@@ -88,9 +89,51 @@ def test_random_overlap():
     None.
 
     '''
+    rotation_gates = ['rx', 'ry', 'rz']
     
+    #np.random.seed(111)
+    n_qubits = np.random.randint(1, high=5)
     
-    return
+    U = {}
+    for j in range(2):
+        n_rotations = np.random.randint(n_qubits, high=n_qubits*3)
+        gates_list = [np.random.choice(rotation_gates) for i in range(n_rotations)]
+        
+        angles = 2*np.pi * np.random.rand(n_rotations)
+        
+        circ = tq.QCircuit()
+        for i, angle in enumerate(angles):
+            qb = i%n_qubits+1
+            
+            if gates_list[i]=='rx':
+                circ += tq.gates.Rx(angle=angle, target=qb)
+            
+            elif gates_list[i]=='ry':
+                circ += tq.gates.Ry(angle=angle, target=qb)
+                
+            elif gates_list[i]=='rz':
+                circ += tq.gates.Rz(angle=angle, target=qb)
+        U[j] = circ
+    
+    objective_real, objective_im = make_overlap(U[0],U[1])
+    
+    Ex = tq.simulate(objective_real)
+    Ey= tq.simulate(objective_im)
+    
+    exp_val = Ex + 1.0j*Ey
+    
+    # we want the overlap of the wavefunctions
+    # # to test we can compute it manually
+    wfn0 = tq.simulate(U[0])
+    wfn1 = tq.simulate(U[1])
+    
+    test = wfn0.inner(wfn1)
+    
+    #print(test, '\n', exp_val)
+    
+    assert np.isclose(test, exp_val, atol=1.e-4)
+    
+    return 
 
 
 def p2g(ps, first_qubit = 0):
@@ -223,7 +266,9 @@ def test_simple_transition():
 #-----------------------------------------------
 if __name__ == "__main__":
   
-    test_simple_overlap()
+    #test_simple_overlap()
     
-    test_simple_transition()
-
+    #test_simple_transition()
+    
+    test_random_overlap()
+    #tq.draw(dic[0], backend='qiskit')
