@@ -15,7 +15,7 @@ This repository contains all the material written and created during the QOSF me
 These two functions will be useful in the testing framework.
 
 ### Braket module
-The braket module inside `braket.py` contains the `braket` function that allows one to calculate the overlap between two states, the expectation value of one operator with respect to a given state or the transition element of one operator with respect to two given states.
+The braket module inside `braket.py` contains the `braket` function that allows one to calculate the overlap between two states, the expectation value of one operator with respect to a given state or the transition element of one operator with respect to two given states. Checkout `Braket_tutorial.ipynb` to have a complete overview of the possible applications of this function as well as a detailed explenation of the underlying theoretical framework.
 
 `test_braket.py` contains the testing of the braket function and of all its components.
 
