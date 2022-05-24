@@ -4,9 +4,9 @@
   <a href="" target="_blank"><img src="https://github.com/fran-scala/qosf-c5-task2/blob/7be030043a89a70ba63dfeae95a818950bac6975/qosf_logo.png?raw=True" width="30%"/> </a>
 </p>
 
-## Tequila implementation of Krylov methods
+## Tequila implementation of Krylov method
 
-This repository contains all the material written and created during the QOSF mentorship program by Francesco Scala and Jakob Kottmann. The goal is the implementation of Krylov methods ([arXiv:1911.05163v1](https://arxiv.org/abs/1911.05163), [published paper](https://pubs.acs.org/doi/10.1021/acs.jctc.9b01125)) inside the [tequila](https://github.com/tequilahub/tequila) package. Full contributions can be seen in the frorked repository of tequila.
+This repository contains all the material written and created during the QOSF mentorship program by Francesco Scala and Jakob Kottmann. The goal is the implementation of Krylov method ([arXiv:1911.05163v1](https://arxiv.org/abs/1911.05163), [published paper](https://pubs.acs.org/doi/10.1021/acs.jctc.9b01125)) inside the [tequila](https://github.com/tequilahub/tequila) package. Full contributions can be seen in the [main pull request](https://github.com/tequilahub/tequila/pull/227) I did.
 
 ### Random generatos
 
@@ -23,3 +23,5 @@ The braket module inside `braket.py` contains the `braket` function that allows 
 `test_braket.py` contains the testing of the braket function and of all its components.
 
 The `test_functions.py` file contains some initial versions of this module.
+
+### Krylov method
