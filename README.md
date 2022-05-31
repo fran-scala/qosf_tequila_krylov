@@ -25,3 +25,4 @@ The braket module inside `braket.py` contains the `braket` function that allows 
 The `test_functions.py` file contains some initial versions of this module.
 
 ### Krylov method
+The `krylov.py` file contains the function `krylov_method` which allows to apply the Krylov method. A simple example using this function is reported in `test_krylov.py`.
