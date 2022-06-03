@@ -6,7 +6,7 @@
 
 ## Tequila implementation of Krylov method
 
-This repository contains all the material written and created during the QOSF mentorship program by Francesco Scala and Jakob Kottmann. The goal is the implementation of Krylov method ([arXiv:1911.05163v1](https://arxiv.org/abs/1911.05163), [published paper](https://pubs.acs.org/doi/10.1021/acs.jctc.9b01125)) inside the [tequila](https://github.com/tequilahub/tequila) package. Full contributions can be seen in the [main pull request](https://github.com/tequilahub/tequila/pull/227) I did.
+This repository contains all the material written and created during the QOSF mentorship program by Francesco Scala and Jakob Kottmann. The goal is the implementation of Krylov method ([arXiv:1911.05163v1](https://arxiv.org/abs/1911.05163), [published paper](https://pubs.acs.org/doi/10.1021/acs.jctc.9b01125)) inside the [tequila](https://github.com/tequilahub/tequila) package. Full contributions can be seen in the pull request I did for the [tequila](https://github.com/tequilahub/tequila/pull/227) and for the [tutorials](https://github.com/tequilahub/tequila-tutorials/pull/18).
 
 ### Random generatos
 
@@ -25,4 +25,4 @@ The braket module inside `braket.py` contains the `braket` function that allows 
 The `test_functions.py` file contains some initial versions of this module.
 
 ### Krylov method
-The `krylov.py` file contains the function `krylov_method` which allows to apply the Krylov method. A simple example using this function is reported in `test_krylov.py`.
+The `krylov.py` file contains the function `krylov_method` which allows to apply the Krylov method. A simple example using this function is reported in `test_krylov.py`. The same example together with the theoretical framework is reported in `Krylov.ipynb`.
